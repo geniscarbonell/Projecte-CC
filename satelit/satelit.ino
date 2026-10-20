@@ -5,31 +5,34 @@ DHT dht(DHTPIN, DHTTYPE);
 
 #include <SoftwareSerial.h>
 int i;
-SoftwareSerial mySerial(10, 11); // RX, TX 
+SoftwareSerial mySerial(10, 11);  // RX, TX
 
 bool enviarDatos = true;
 
 
 void setup() {
   Serial.begin(9600);
+  mySerial.begin(9600);
   dht.begin();
 
-  mySerial.begin(9600);
   mySerial.println("Empezamos");
-  i=1;
-  
+  i = 1;
+
   pinMode(7, OUTPUT);
 }
+
 void loop() {
-  if (enviarDatos == true){
-   delay(2000);
-   float h = dht.readHumidity();
-   float t = dht.readTemperature();
-   if (isnan(h) || isnan(t))
+  if (enviarDatos == true) {
+    delay(1500);
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+
+    if (isnan(h) || isnan(t))
       mySerial.println("Error al leer el sensor DHT11");
-   else {
-      digitalWrite(7, HIGH);
-      delay(500);
+
+    else {
+      digitalWrite(7, HIGH);  //ELIMINAR LOS DELAYS, NO PERMITEN COGER TODOS LOS VALORES, identar cODIGO
+      delay(200);
       digitalWrite(7, LOW);
 
       mySerial.print("T:");
@@ -38,28 +41,20 @@ void loop() {
 
       mySerial.print("H:");
       mySerial.println(h);
-   
-   }}
-  
+    }
+  }
+
   if (mySerial.available()) {
     String mensaje = mySerial.readString();
-    
+
     if (mensaje == "Parar") {
       enviarDatos = false;
-      while (enviarDatos == false){
-        mySerial.print("T:");
-        mySerial.print(NAN);
-        mySerial.print(":");
-
-        mySerial.print("H:");
-        mySerial.println(NAN);
-      }
     }
 
     if (mensaje == "Reanudar") {
       enviarDatos = true;
       digitalWrite(7, HIGH);
-      delay(500);
+      delay(200);
       digitalWrite(7, LOW);
     }
   }
