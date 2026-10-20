@@ -13,19 +13,6 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 | **Satèl·lit** | Un sensor de temperatura i humitat mesura les dades i les envia per port sèrie a l'estació de terra. |
 | **Estació de terra** | Programa en Python que llegeix les dades i les representa en una gràfica. Permet iniciar, parar i reprendre la recepció. |
 
-```
-Sensor → Arduino (satèl·lit) → port sèrie (9600 baud) → Python (estació de terra) → gràfica
-```
-
-## Format de les dades
-
-L'Arduino envia una línia de text per mostra, per exemple:
-
-```
-T:25.3:H:60.1
-```
-
-on `T` és la temperatura (°C) i `H` la humitat relativa (%).
 
 ## Requisits
 
@@ -43,7 +30,7 @@ on `T` és la temperatura (°C) i `H` la humitat relativa (%).
 4. Tanca el Monitor Sèrie de l'Arduino IDE (si no, el port estarà ocupat)
 5. Executa l'estació de terra:
 ```
-   estacio_terra.py
+   estacio_Terra.py
 ```
 6. Usa els botons INICIAR, PARAR i REANUDAR per controlar la recepció.
 
