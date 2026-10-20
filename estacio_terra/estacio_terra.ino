@@ -1,5 +1,5 @@
 #include <SoftwareSerial.h>
-SoftwareSerial mySerial(10, 11); // RX, TX (azul, naranja)
+SoftwareSerial mySerial(10, 11); // RX, TX 
 unsigned long nextMillis = 500;
 void setup() {
    Serial.begin(9600);

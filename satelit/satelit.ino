@@ -1,4 +1,3 @@
-// Definiciones necesarias
 #include <DHT.h>
 #define DHTPIN 2
 #define DHTTYPE DHT11
@@ -11,11 +10,9 @@ SoftwareSerial mySerial(10, 11); // RX, TX
 bool enviarDatos = true;
 
 
-
 void setup() {
-   Serial.begin(9600);
-   // Inicialización del sensor
-   dht.begin();
+  Serial.begin(9600);
+  dht.begin();
 
   mySerial.begin(9600);
   mySerial.println("Empezamos");
@@ -37,38 +34,33 @@ void loop() {
 
       mySerial.print("T:");
       mySerial.print(t);
-      //mySerial.println("°C");
       mySerial.print(":");
 
       mySerial.print("H:");
       mySerial.println(h);
-      //mySerial.print("%\t");
    
    }}
   
   if (mySerial.available()) {
     String mensaje = mySerial.readString();
+    
     if (mensaje == "Parar") {
       enviarDatos = false;
       while (enviarDatos == false){
-      mySerial.print("T:");
-      mySerial.print(NAN);
-      //mySerial.println("°C");
-      mySerial.print(":");
+        mySerial.print("T:");
+        mySerial.print(NAN);
+        mySerial.print(":");
 
-      mySerial.print("H:");
-      mySerial.println(NAN);
-      //mySerial.print("%\t");
+        mySerial.print("H:");
+        mySerial.println(NAN);
       }
-
     }
+
     if (mensaje == "Reanudar") {
       enviarDatos = true;
       digitalWrite(7, HIGH);
       delay(500);
       digitalWrite(7, LOW);
     }
-
   }
-  }
-
+}
