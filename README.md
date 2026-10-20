@@ -6,6 +6,8 @@
 
 Sistema de telemetria format per un satèl·lit i una estació de terra que rep les dades i les mostra en una gràfica en temps real.
 
+Video explicatiu
+
 ## Estructura del projecte
 
 | Component | Funció |
