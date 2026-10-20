@@ -1,4 +1,4 @@
 # Projecte
 Repositori del projecte de CC 
-Ariadna Lidon, Hector Bolinches i Genís Carbonell
+Ariadna Lidón, Hector Bolinches i Genís Carbonell
 
