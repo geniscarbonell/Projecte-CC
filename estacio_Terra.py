@@ -9,11 +9,11 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-
-device = 'COM4'
+#Canvia el numero del COM al que et surti al arduino
+device = 'COM7'
 ser = serial.Serial(device, baudrate=9600)
 
-datos_grafica = queue.Queue()
+datos_grafica = queue.Queue()   
 
 
 def recepcion():
@@ -32,17 +32,18 @@ def recepcion():
                 line = ser.readline().decode('utf-8').rstrip()
                 print(line)
                 trozos = line.split(':')
-                eje_x.append(i)
-                temperatura = float(trozos[1])
-                temperaturas.append(temperatura)
-                humedad = float(trozos[3])
-                humedades.append(humedad)
+                if trozos[0] == "1":
+                    eje_x.append(i)
+                    temperatura = float(trozos[2])
+                    temperaturas.append(temperatura)
+                    humedad = float(trozos[4])
+                    humedades.append(humedad)
 
-                datos_grafica.put(
-                    (eje_x[-1], temperatura, humedad)
-                )
+                    datos_grafica.put(
+                        (eje_x[-1], temperatura, humedad)
+                    )
 
-                i = i + 1
+                    i = i + 1
 
     except KeyboardInterrupt:
         print("Saliendo...")

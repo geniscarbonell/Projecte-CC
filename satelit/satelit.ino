@@ -4,8 +4,15 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 #include <SoftwareSerial.h>
-int i;
 SoftwareSerial mySerial(10, 11);  // RX, TX
+unsigned long nextHT = 0;
+unsigned long nextTimeoutHT = 0;
+unsigned long previousMillis = 0;
+unsigned long previousLatido = 0;
+const long intervalLed = 1000;
+bool esperandoTimeout = false;
+bool led = false;
+const long latido = 6000;
 
 bool enviarDatos = true;
 
@@ -15,33 +22,52 @@ void setup() {
   mySerial.begin(9600);
   dht.begin();
 
-  mySerial.println("Empezamos");
-  i = 1;
-
   pinMode(7, OUTPUT);
+  pinMode(4, OUTPUT);
 }
 
 void loop() {
   if (enviarDatos == true) {
-    delay(1500);
-    float h = dht.readHumidity();
-    float t = dht.readTemperature();
 
-    if (isnan(h) || isnan(t))
-      mySerial.println("Error al leer el sensor DHT11");
+    if (millis() >= nextHT) {
+      nextHT = millis() + 2000;
+      float h = dht.readHumidity();
+      float t = dht.readTemperature();
 
-    else {
-      digitalWrite(7, HIGH);  //ELIMINAR LOS DELAYS, NO PERMITEN COGER TODOS LOS VALORES, identar cODIGO
-      delay(200);
-      digitalWrite(7, LOW);
+      if (isnan(h) || isnan(t)) {
+        if (!esperandoTimeout) {
+          esperandoTimeout = true;
+          nextTimeoutHT = millis() + 5000;  //5 segundos
+        }
+      } else {
+        esperandoTimeout = false;
+        led = true;
 
-      mySerial.print("T:");
-      mySerial.print(t);
-      mySerial.print(":");
+        digitalWrite(4, LOW);
+        digitalWrite(7, HIGH);
+        previousMillis = millis();
 
-      mySerial.print("H:");
-      mySerial.println(h);
+        mySerial.print("1:");
+        mySerial.print("T:");
+        mySerial.print(t);
+        mySerial.print(":");
+
+        mySerial.print("H:");
+        mySerial.println(h);
+      }
     }
+    if (esperandoTimeout && (millis() >= nextTimeoutHT)) {
+      digitalWrite(4, HIGH);
+    }
+  }
+
+  if (led && (millis() - previousMillis >= intervalLed)) {
+    digitalWrite(7, LOW);
+    led = false;
+  }
+  if (millis() - previousLatido >= latido) {
+    previousLatido = millis();
+    mySerial.println("3:");
   }
 
   if (mySerial.available()) {
@@ -53,9 +79,6 @@ void loop() {
 
     if (mensaje == "Reanudar") {
       enviarDatos = true;
-      digitalWrite(7, HIGH);
-      delay(200);
-      digitalWrite(7, LOW);
     }
   }
 }
