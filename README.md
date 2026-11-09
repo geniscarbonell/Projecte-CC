@@ -42,6 +42,6 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 - [x] Enviament de dades per port sèrie
 - [x] Gràfica a l'estació de terra
 - [x] Botons d'iniciar, parar i reprendre
+- [x] Heartbeat
 - [ ] Tests unitàris
-- [ ] Heartbeat
 - [ ] Fer que, en reprendre la recepció, la gràfica continuï des d'on tocava
