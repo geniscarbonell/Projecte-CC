@@ -1,12 +1,12 @@
 #include <Servo.h>
 const int trigPin = 9;
 const int echoPin = 8;
-const int servoPin = 10;
-const int anguloActual = 0;
-const int angulo = 1,8;
+const int servoPin = 12;
+float anguloActual = 0;
+float angulo = 1.8;
 unsigned long duracionServo = 0;
 unsigned long anterior = 0;
-
+unsigned long anteriorEnvio = 0;
 
 Servo servoMotor;
 long duracion;
@@ -31,8 +31,7 @@ void loop() {
 
     /* mide cuantos microsegundos tarda en volver el eco, si en 15 milisegundos no detecta nada corta la espera para no congelar el programa
     tiene hasta 2,5 m de rango para detectar. multiplicamos el tiempo por 0,034 (velocidad sonido en cm/microsec) y divide entre 2 (ida y vuelta) */
-    distancia = pulseIn(echoPin, HIGH, 15000) * 0.034 / 2; 
-    Serial.println(distancia);
+    distancia = pulseIn(echoPin, HIGH, 15000) * 0.034 / 2;
   }
 
   if (millis() - duracionServo >= 20) {
@@ -42,10 +41,18 @@ void loop() {
 
     servoMotor.write(anguloActual);
 
-      if (anguloActual >= 180 || anguloActual <= 0) {
-        angulo = -angulo;
-      }
-  
+    if (anguloActual >= 180 || anguloActual <= 0) {
+      angulo = -angulo;
+    }
+  }
+  // Envío de datos cada 50 ms
+  if (millis() - anteriorEnvio >= 50) {
 
+    anteriorEnvio = millis();
+
+    Serial.print(anguloActual);
+    Serial.print(":");
+    Serial.println(distancia);
   }
 }
+
