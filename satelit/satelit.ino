@@ -8,7 +8,7 @@ SoftwareSerial mySerial(10, 11);  // RX, TX
 DHT dht(DHTPIN, DHTTYPE);
 
 // Pins digitals
-const int 
+
 
 // Controls de temps de leds i sensor 
 unsigned long nextHT = 0;
@@ -16,12 +16,13 @@ unsigned long nextTimeoutHT = 0;
 unsigned long previousMillis = 0;
 unsigned long previousLatido = 0;
 
-const long intervalEnviament = 2000; // Per defecte cada 2 segons
+unsigned long intervalEnviament = 2000; // Per defecte cada 2 segons
 const long intervalLed = 1000;
-const long latido = 6000;
-
 bool esperandoTimeout = false;
 bool led = false;
+const long latido = 6000;
+
+
 bool enviarDatos = true;
 
 // Declaracions per a clacular la mitjana
@@ -78,15 +79,7 @@ void loop() {
       contadormax = 0;
     }
 
-    // Rebre la nova freqüència d'enviament (en mil·lisegons)
-    if (mensaje.startsWith("Frecuencia:")) {
-      unsigned long novaFreq = mensaje.substring(11).toInt();
 
-      if (novaFreq >= 1000) { // Protecció: el sensor DHT11 necessita mínim 1 segon
-        intervalEnviament = novaFreq;
-        nextHT = millis() + intervalEnviament;
-      } 
-    } 
 
 
     // CAMBIO: recibir el nuevo límite de temperatura desde Tierra
@@ -97,6 +90,16 @@ void loop() {
       Serial.print("Nuevo límite de temperatura: ");
       Serial.println(mediamax);
     }
+
+        // Rebre la nova freqüència d'enviament (en mil·lisegons)
+    if (mensaje.startsWith("Frecuencia:")) {
+      unsigned long novaFreq = mensaje.substring(11).toInt();
+
+      if (novaFreq >= 1000) { // Protecció: el sensor DHT11 necessita mínim 1 segon
+        intervalEnviament = novaFreq;
+        nextHT = millis() + intervalEnviament;
+      } 
+    } 
   }
 
   if (enviarDatos == true) {
