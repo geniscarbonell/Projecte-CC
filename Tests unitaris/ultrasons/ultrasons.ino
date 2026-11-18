@@ -44,6 +44,9 @@ void loop() {
     if (anguloActual >= 180 || anguloActual <= 0) {
       angulo = -angulo;
     }
+    
+    servoMotor.write((int)anguloActual);
+
   }
   // Envío de datos cada 50 ms
   if (millis() - anteriorEnvio >= 50) {
