@@ -6,7 +6,7 @@
 
 Sistema de telemetria format per un satèl·lit i una estació de terra que rep les dades i les mostra en una gràfica en temps real.
 
-[Video explicatiu](https://drive.google.com/file/d/1mpNESqypEljED7twuoe2ZcxBVlP1gg7g/view?usp=sharing)
+[Video explicatiu]
 
 ## Estructura del projecte
 
@@ -46,3 +46,7 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 - [ ] Tests unitàris
 - [ ] Posar constants als pinmodes
 - [ ] Fer que, en reprendre la recepció, la gràfica continuï des d'on tocava
+- [ ] L'usuari pot escollir on es calculara la mitja de les últimes 10 dades de temperatura, i establir un valor màxim
+- [ ] L'usuari pot canviar el periode d'enviament de dades de temperatura, humitat i distància
+- [ ] El codi està estructurat, identat i amb comentaris clarificadors
+- [ ] El usuari pot posar el sensor de distància en mode rastreig i establir una orientació determinada per el sensor
