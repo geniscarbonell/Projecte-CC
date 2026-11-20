@@ -27,31 +27,38 @@ def recepcion():
 
                 trozos = line.split(':')
 
-                # Trama 1: Temperatura i Humitat
-                if trozos == "1" and len(trozos) >= 5:
+                # Trama 1: Temperatura i Humitat -> format "1:T:25.00:H:50.00"
+                if trozos[0] == "1" and len(trozos) >= 5:
                     print(line)
-                    temperatura = float(trozos)
-                    humedad = float(trozos)
-                    datos_grafica.put(("datos", i, temperatura, humedad))
-                    i = i + 1
-
-                # Trama 2: Radar Ultrasons (2:angulo:distancia)
-                elif trozos == "2" and len(trozos) >= 3:
                     try:
-                        angulo = float(trozos)
-                        distancia = float(trozos)
+                        temperatura = float(trozos[2])
+                        humedad = float(trozos[4])
+                        datos_grafica.put(("datos", i, temperatura, humedad))
+                        i = i + 1
+                    except ValueError:
+                        pass
+
+                # Trama 2: Radar Ultrasons -> format "2:angulo:distancia"
+                elif trozos[0] == "2" and len(trozos) >= 3:
+                    try:
+                        angulo = float(trozos[1])
+                        distancia = float(trozos[2])
                         datos_grafica.put(("radar", angulo, distancia))
                     except ValueError:
                         pass
 
-                # Trama 4: Mitjana
-                elif trozos == "4" and len(trozos) >= 3:
+                # Trama 4: Mitjana -> format "4:Media:24.50"
+                elif trozos[0] == "4" and len(trozos) >= 3:
                     print(line)
-                    media = float(trozos)
-                    datos_grafica.put(("media", max(0, i - 1), media))
+                    try:
+                        media = float(trozos[2])
+                        datos_grafica.put(("media", max(0, i - 1), media))
+                    except ValueError:
+                        pass
 
                 else:
                     print(line)
+
 
     except KeyboardInterrupt:
         print("Saliendo...")

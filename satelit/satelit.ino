@@ -44,7 +44,7 @@ const long latido = 6000;
 bool enviarDatos = true;
 
 // Declaracions per a calcular la mitjana
-float temperaturas;
+float temperaturas[10];
 float contador = 0;
 float media = 0;
 float mediamax = 30;
