@@ -1,4 +1,4 @@
-#🛰️ Projecte sistema satèl·lit · Grup 10
+##🛰️ Projecte sistema satèl·lit · Grup 10
 
 **✍️ Autors:** Ariadna Lidón, Hector Bolinches i Genís Carbonell
 
