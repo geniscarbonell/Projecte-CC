@@ -1,6 +1,6 @@
-# Projecte sistema satèl·lit · Grup 10
+#🛰️ Projecte sistema satèl·lit · Grup 10
 
-**Autors:** Ariadna Lidón, Hector Bolinches i Genís Carbonell
+**✍️ Autors:** Ariadna Lidón, Hector Bolinches i Genís Carbonell
 
 ## Descripció
 
@@ -8,7 +8,7 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 
 [Video explicatiu]
 
-## Estructura del projecte
+##🏗️ Estructura del projecte
 
 | Component | Funció |
 |---|---|
@@ -16,11 +16,11 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 | **Estació de terra** | Programa en Python que llegeix les dades i les representa en una gràfica. Permet iniciar, parar, reprendre la recepció, calcular mitjanes, valors màxims i avisar a l'usuari quan es detecta un error de comunicació o de detecció|
 
 
-## Requisits
+##✅ Requisits
 
-- Arduino Uno, sensor DHT i LEDs
-- Python 3.x amb les llibreries:
-- Servomotor y mòdul ultrasònic
+- 🤖 Arduino Uno, sensor DHT i LEDs
+- 🐍Python 3.x amb les llibreries:
+- ⚙️Servomotor y mòdul ultrasònic
 ```
   pip install pyserial matplotlib
 ```
@@ -37,7 +37,7 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 ```
 6. Usa els botons INICIAR, PARAR, REANUDAR CALCULAR MITJANA TEMPERATURA I HUMITAT I CANVIAR FREQÜÈNCIA D'ENVIAMENT DE DADES per controlar la recepció.
 
-## Estat actual
+##📢 Estat actual
 
 - [x] Lectura de temperatura i humitat amb el sensor
 - [x] Enviament de dades per port sèrie
