@@ -200,10 +200,35 @@ def EnviarFrecuencia():
         estadoFrecuencia.config(text="Introduce un número válido", fg="red")
 
 
+def ActivarRastreo():
+    ser.write("ModoRastreo\n".encode('utf-8'))
+    estadoRadar.config(text="Modo: Rastreo continuo", fg="green")
+    registrar_evento("Comando", "Sensor distancia en modo rastreo")
+
+
+def EnviarAngulo():
+    try:
+        ang = float(anguloRadarVar.get())
+        if not math.isfinite(ang) or ang < 0 or ang > 180:
+            estadoRadar.config(text="Ángulo entre 0° y 180°", fg="red")
+            return
+
+        mensaje = "Angulo:" + str(ang) + "\n"
+        ser.write(mensaje.encode('utf-8'))
+        estadoRadar.config(text=f"Modo: Fijo en {ang}°", fg="blue")
+        registrar_evento("Comando", f"Orientación fija del sensor a {ang}°")
+    except ValueError:
+        estadoRadar.config(text="Introduce un ángulo válido", fg="red")
+
+
+
 # --- CONFIGURACIÓ FINESTRA PRINCIPAL ---
 window = Tk()
 window.title("Estación de Tierra - Satélite y Radar")
-window.geometry("1520x860")
+window.update_idletasks()
+window.attributes("-fullscreen", True)
+window.bind("<Escape>", lambda e: window.attributes("-fullscreen", False))
+window.bind("<F11>", lambda e: window.attributes("-fullscreen", not window.attributes("-fullscreen")))
 
 window.rowconfigure(0, weight=1)
 window.rowconfigure(1, weight=1)
@@ -266,40 +291,56 @@ canvas.get_tk_widget().pack(fill=BOTH, expand=True)
 
 
 # --- 2. PANELL CENTRAL: CONTROLS ---
-panel_controles = LabelFrame(window, text="CONTROL DE CÁLCULO", font=("Helvetica", 12))
+panel_controles = LabelFrame(window, text="CONTROL DE CÁLCULO Y SENSORES", font=("Helvetica", 12))
 panel_controles.grid(row=2, column=2, padx=5, pady=5, sticky=N + S + E + W)
 
 terraButton = Button(panel_controles, text="CÁLCULO ESTACIÓN TIERRA", bg='orange', fg="white", font=("Helvetica", 11), command=TerraCalcul)
-terraButton.pack(fill=X, padx=5, pady=10)
+terraButton.pack(fill=X, padx=5, pady=5)
 
 satelitButton = Button(panel_controles, text="CÁLCULO SATÉLITE", bg='purple', fg="white", font=("Helvetica", 11), command=SatelitCalcul)
-satelitButton.pack(fill=X, padx=5, pady=10)
+satelitButton.pack(fill=X, padx=5, pady=5)
 
-limiteLabel = Label(panel_controles, text="Límite de temperatura (°C):", font=("Helvetica", 11))
-limiteLabel.pack(padx=5, pady=10)
+limiteLabel = Label(panel_controles, text="Límite de temperatura (°C):", font=("Helvetica", 10))
+limiteLabel.pack(padx=5, pady=(6, 2))
 
 limiteTemperatura = StringVar()
-limiteEntrada = Entry(panel_controles, textvariable=limiteTemperatura, font=("Helvetica", 14), justify=CENTER)
-limiteEntrada.pack(fill=X, padx=5, pady=5)
+limiteEntrada = Entry(panel_controles, textvariable=limiteTemperatura, font=("Helvetica", 12), justify=CENTER)
+limiteEntrada.pack(fill=X, padx=5, pady=2)
 
-enviarLimiteButton = Button(panel_controles, text="ENVIAR LÍMITE", bg='blue', fg="white", font=("Helvetica", 11), command=EnviarLimite)
-enviarLimiteButton.pack(fill=X, padx=5, pady=10)
+enviarLimiteButton = Button(panel_controles, text="ENVIAR LÍMITE", bg='blue', fg="white", font=("Helvetica", 10), command=EnviarLimite)
+enviarLimiteButton.pack(fill=X, padx=5, pady=4)
 
-estadoLimite = Label(panel_controles, text="", font=("Helvetica", 10))
-estadoLimite.pack(padx=5, pady=5)
+estadoLimite = Label(panel_controles, text="", font=("Helvetica", 9))
+estadoLimite.pack(padx=5)
 
-frecuenciaLabel = Label(panel_controles, text="Frecuencia de envío (s):", font=("Helvetica", 11))
-frecuenciaLabel.pack(padx=5, pady=10)
+frecuenciaLabel = Label(panel_controles, text="Frecuencia de envío (s):", font=("Helvetica", 10))
+frecuenciaLabel.pack(padx=5, pady=(6, 2))
 
 frecuenciaDatos = StringVar()
-frecuenciaEntrada = Entry(panel_controles, textvariable=frecuenciaDatos, font=("Helvetica", 14), justify=CENTER)
-frecuenciaEntrada.pack(fill=X, padx=5, pady=5)
+frecuenciaEntrada = Entry(panel_controles, textvariable=frecuenciaDatos, font=("Helvetica", 12), justify=CENTER)
+frecuenciaEntrada.pack(fill=X, padx=5, pady=2)
 
-enviarFrecuenciaButton = Button(panel_controles, text="ENVIAR FRECUENCIA", bg='teal', fg="white", font=("Helvetica", 11), command=EnviarFrecuencia)
-enviarFrecuenciaButton.pack(fill=X, padx=5, pady=10)
+enviarFrecuenciaButton = Button(panel_controles, text="ENVIAR FRECUENCIA", bg='teal', fg="white", font=("Helvetica", 10), command=EnviarFrecuencia)
+enviarFrecuenciaButton.pack(fill=X, padx=5, pady=4)
 
-estadoFrecuencia = Label(panel_controles, text="", font=("Helvetica", 10))
-estadoFrecuencia.pack(padx=5, pady=5)
+estadoFrecuencia = Label(panel_controles, text="", font=("Helvetica", 9))
+estadoFrecuencia.pack(padx=5)
+
+# Controles de orientación del sensor de distancia (Radar)
+rastreoButton = Button(panel_controles, text="MODO RASTREO (BARRIDO)", bg='#2e7d32', fg="white", font=("Helvetica", 10), command=ActivarRastreo)
+rastreoButton.pack(fill=X, padx=5, pady=(8, 3))
+
+frame_angulo = Frame(panel_controles)
+frame_angulo.pack(fill=X, padx=5, pady=2)
+
+Label(frame_angulo, text="Ángulo (0-180°):", font=("Helvetica", 10)).pack(side=LEFT)
+anguloRadarVar = StringVar()
+Entry(frame_angulo, textvariable=anguloRadarVar, font=("Helvetica", 11), width=6, justify=CENTER).pack(side=LEFT, padx=4)
+Button(frame_angulo, text="FIJAR", bg='#1565c0', fg="white", font=("Helvetica", 10), command=EnviarAngulo).pack(side=LEFT, fill=X, expand=True)
+
+estadoRadar = Label(panel_controles, text="Modo: Rastreo continuo", fg="green", font=("Helvetica", 9))
+estadoRadar.pack(padx=5, pady=2)
+
 
 
 # --- 3. PANELL DRETA: ESCÀNER D'ULTRASONS ---
