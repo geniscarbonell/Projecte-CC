@@ -46,8 +46,9 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 - [x] Heartbeat
 - [x] Tests unitàris
 - [x] Posar constants als pinmodes
-- [ ] Fer que, en reprendre la recepció, la gràfica continuï des d'on tocava
 - [x] L'usuari pot escollir on es calculara la mitja de les últimes 10 dades de temperatura, i establir un valor màxim
 - [x] L'usuari pot canviar el periode d'enviament de dades de temperatura, humitat i distància
 - [x] El codi està estructurat, identat i amb comentaris clarificadors
 - [x] El usuari pot posar el sensor de distància en mode rastreig i establir una orientació determinada per el sensor
+- [ ] Fer que, en reprendre la recepció, la gràfica continuï des d'on tocava
+- [ ] Fer que puguis triar un angle concret estatic
