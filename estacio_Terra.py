@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 import threading
 import time
 import math
@@ -14,6 +16,57 @@ device = 'COM7'
 ser = serial.Serial(device, baudrate=9600)
 
 datos_grafica = queue.Queue()
+
+simulando_error = False
+errores_descartados = 0
+
+LOG_FILE = "registro_eventos.txt"
+
+
+def registrar_evento(tipo, descripcion):
+    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    linea = f"{fecha_hora} | {tipo} | {descripcion}\n"
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(linea)
+    except Exception as e:
+        print("Error guardando evento:", e)
+    try:
+        window.after(0, actualizar_vista_eventos)
+    except Exception:
+        pass
+
+
+def guardar_observacion():
+    texto = entry_obs.get().strip()
+    if texto:
+        registrar_evento("Observacion", texto)
+        entry_obs.delete(0, END)
+
+
+def actualizar_vista_eventos(*args):
+    if "txt_eventos" not in globals():
+        return
+    filtro_t = filtro_tipo.get()
+    filtro_f = filtro_fecha.get().strip().lower()
+
+    txt_eventos.config(state="normal")
+    txt_eventos.delete("1.0", END)
+
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            for linea in f:
+                partes = linea.strip().split(" | ", 2)
+                if len(partes) == 3:
+                    fecha_h, tipo, desc = partes
+                    if filtro_t != "Todos" and tipo != filtro_t:
+                        continue
+                    if filtro_f and filtro_f not in fecha_h.lower():
+                        continue
+                    txt_eventos.insert(END, f"[{fecha_h}] ({tipo}) {desc}\n")
+
+    txt_eventos.see(END)
+    txt_eventos.config(state="disabled")
 
 
 def recepcion():
@@ -56,6 +109,17 @@ def recepcion():
                     except ValueError:
                         pass
 
+                # Trama 5: Error de checksum detectat per l'Arduino -> "5:ErrorChecksum:<missatge corrupte>"
+                elif trozos[0] == "5":
+                    print(line)
+                    datos_grafica.put(("error",))
+                    registrar_evento("Alarma", f"Mensaje corrupto descartado ({line})")
+
+                # Alarma de temperatura excesiva desde Arduino/Satélite
+                elif line == "Límite temperatura":
+                    print(line)
+                    registrar_evento("Alarma", "Temperatura excesiva (Límite superado)")
+
                 else:
                     print(line)
 
@@ -73,18 +137,36 @@ def Iniciar():
 
 def Parar():
     ser.write("Parar\n".encode('utf-8'))
+    registrar_evento("Comando", "Parar envío de datos")
 
 
 def Reanudar():
     ser.write("Reanudar\n".encode('utf-8'))
+    registrar_evento("Comando", "Reanudar envío de datos")
 
 
 def TerraCalcul():
     ser.write("TerraCalcul\n".encode('utf-8'))
+    registrar_evento("Comando", "Cálculo de media en Estación de Tierra")
 
 
 def SatelitCalcul():
     ser.write("SatelitCalcul\n".encode('utf-8'))
+    registrar_evento("Comando", "Cálculo de media en Satélite")
+
+
+def AlternarError():
+    global simulando_error
+    simulando_error = not simulando_error
+
+    if simulando_error:
+        ser.write("ErrorOn\n".encode('utf-8'))
+        errorButton.config(text="SIMULAR ERRORES: ON", bg='red')
+        registrar_evento("Comando", "Activar simulación de errores (ErrorOn)")
+    else:
+        ser.write("ErrorOff\n".encode('utf-8'))
+        errorButton.config(text="SIMULAR ERRORES: OFF", bg='gray')
+        registrar_evento("Comando", "Desactivar simulación de errores (ErrorOff)")
 
 
 def EnviarLimite():
@@ -97,6 +179,7 @@ def EnviarLimite():
         mensaje = "LimiteTemperatura:" + str(limite) + "\n"
         ser.write(mensaje.encode('utf-8'))
         estadoLimite.config(text="Límite enviado: " + str(limite) + " °C", fg="green")
+        registrar_evento("Comando", f"Nuevo límite de temperatura: {limite} °C")
     except ValueError:
         estadoLimite.config(text="Introduce una temperatura válida", fg="red")
 
@@ -112,6 +195,7 @@ def EnviarFrecuencia():
         mensaje = "Frecuencia:" + str(milisegons) + "\n"
         ser.write(mensaje.encode('utf-8'))
         estadoFrecuencia.config(text="Enviado: cada " + str(segons) + " s", fg="green")
+        registrar_evento("Comando", f"Nueva frecuencia de envío: {segons} s")
     except ValueError:
         estadoFrecuencia.config(text="Introduce un número válido", fg="red")
 
@@ -119,11 +203,12 @@ def EnviarFrecuencia():
 # --- CONFIGURACIÓ FINESTRA PRINCIPAL ---
 window = Tk()
 window.title("Estación de Tierra - Satélite y Radar")
-window.geometry("1520x680")
+window.geometry("1520x860")
 
 window.rowconfigure(0, weight=1)
 window.rowconfigure(1, weight=1)
 window.rowconfigure(2, weight=4)
+window.rowconfigure(3, weight=2)
 
 window.columnconfigure(0, weight=1)
 window.columnconfigure(1, weight=1)
@@ -141,7 +226,17 @@ pararButton = Button(window, text="PARAR", bg='red', fg="white", font=("Helvetic
 pararButton.grid(row=1, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
 reanudarButton = Button(window, text="REANUDAR", bg='blue', fg="white", font=("Helvetica", 20), command=Reanudar)
-reanudarButton.grid(row=1, column=2, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
+reanudarButton.grid(row=1, column=2, padx=5, pady=5, sticky=N + S + E + W)
+
+# Prova del checksum: botó per simular errors al satèl·lit + comptador de missatges descartats
+panel_test = Frame(window)
+panel_test.grid(row=1, column=3, padx=5, pady=5, sticky=N + S + E + W)
+
+errorButton = Button(panel_test, text="SIMULAR ERRORES: OFF", bg='gray', fg="white", font=("Helvetica", 14), command=AlternarError)
+errorButton.pack(fill=BOTH, expand=True)
+
+erroresLabel = Label(panel_test, text="Mensajes descartados: 0", font=("Helvetica", 12))
+erroresLabel.pack(fill=X)
 
 
 # --- 1. PANELL ESQUERRA: GRÀFICA TEMP/HUMITAT ---
@@ -301,6 +396,45 @@ def actualizar_radar(angulo, distancia):
     canvas_radar.tag_raise(linea_servo)
 
 
+# --- 4. PANELL INFERIOR: REGISTRE D'EVENTS (APARTAT 6.4) ---
+panel_eventos = LabelFrame(window, text="REGISTRO DE EVENTOS", font=("Helvetica", 12))
+panel_eventos.grid(row=3, column=0, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
+
+frame_obs = Frame(panel_eventos)
+frame_obs.pack(fill=X, padx=5, pady=3)
+
+Label(frame_obs, text="Observación usuario:", font=("Helvetica", 10, "bold")).pack(side=LEFT)
+entry_obs = Entry(frame_obs, font=("Helvetica", 10))
+entry_obs.pack(side=LEFT, fill=X, expand=True, padx=5)
+entry_obs.bind("<Return>", lambda e: guardar_observacion())
+Button(frame_obs, text="Guardar observación", bg="#2e7d32", fg="white", font=("Helvetica", 10), command=guardar_observacion).pack(side=LEFT)
+
+frame_filtros = Frame(panel_eventos)
+frame_filtros.pack(fill=X, padx=5, pady=3)
+
+Label(frame_filtros, text="Filtrar por tipo:", font=("Helvetica", 10)).pack(side=LEFT)
+filtro_tipo = StringVar(value="Todos")
+menu_tipo = OptionMenu(frame_filtros, filtro_tipo, "Todos", "Comando", "Alarma", "Observacion", command=actualizar_vista_eventos)
+menu_tipo.pack(side=LEFT, padx=5)
+
+Label(frame_filtros, text="Filtrar por día/hora (ej. 2026-11-24 o 10:53):", font=("Helvetica", 10)).pack(side=LEFT, padx=(15, 5))
+filtro_fecha = StringVar()
+filtro_fecha.trace_add("write", actualizar_vista_eventos)
+Entry(frame_filtros, textvariable=filtro_fecha, font=("Helvetica", 10), width=22).pack(side=LEFT)
+
+frame_lista_ev = Frame(panel_eventos)
+frame_lista_ev.pack(fill=BOTH, expand=True, padx=5, pady=3)
+
+scroll_ev = Scrollbar(frame_lista_ev)
+scroll_ev.pack(side=RIGHT, fill=Y)
+
+txt_eventos = Text(frame_lista_ev, height=6, font=("Consolas", 10), state="disabled", yscrollcommand=scroll_ev.set)
+txt_eventos.pack(side=LEFT, fill=BOTH, expand=True)
+scroll_ev.config(command=txt_eventos.yview)
+
+actualizar_vista_eventos()
+
+
 eje_x = []
 temperaturas = []
 humedades = []
@@ -309,6 +443,7 @@ medias = []
 
 
 def actualizar_grafica():
+    global errores_descartados
     actualizado_dht = False
 
     while not datos_grafica.empty():
@@ -327,6 +462,10 @@ def actualizar_grafica():
 
         elif dato[0] == "radar":
             actualizar_radar(dato[1], dato[2])
+
+        elif dato[0] == "error":
+            errores_descartados += 1
+            erroresLabel.config(text="Mensajes descartados: " + str(errores_descartados))
 
     if actualizado_dht:
         if eje_x:

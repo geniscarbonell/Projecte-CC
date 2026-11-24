@@ -52,6 +52,38 @@ int contadormax = 0;
 int i = 0;
 bool calcularMitjana = false;
 
+// Simulació d'errors de transmissió (s'activa des de l'estació de terra)
+bool simularError = false;
+
+
+// Checksum: suma de tots els bytes del missatge, truncada a 1 byte (mòdul 256)
+byte calcularChecksum(const String &msg) {
+  byte suma = 0;
+  for (unsigned int k = 0; k < msg.length(); k++) {
+    suma += (byte)msg[k];   // el byte desborda i queda truncat automàticament
+  }
+  return suma;
+}
+
+// Envia un missatge amb el format  <missatge>*<checksum en hexadecimal>
+void enviarMensaje(String msg) {
+  // 1. Es calcula el checksum del missatge ORIGINAL
+  byte cs = calcularChecksum(msg);
+
+  // 2. Si la simulació està activa, s'altera el missatge DESPRÉS de calcular el checksum
+  //    (aproximadament 1 de cada 3 missatges: es canvia 1 bit d'un caràcter a l'atzar)
+  if (simularError && msg.length() > 0 && random(3) == 0) {
+    int pos = random(msg.length());
+    msg.setCharAt(pos, msg[pos] ^ 0x01);
+  }
+
+  // 3. Es transmet el missatge (potser alterat) amb el checksum original
+  mySerial.print(msg);
+  mySerial.print('*');
+  if (cs < 16) mySerial.print('0');   // sempre 2 dígits hexadecimals
+  mySerial.println(cs, HEX);
+}
+
 
 void setup() {
   
@@ -59,6 +91,7 @@ void setup() {
   mySerial.begin(9600);
   dht.begin();
   mySerial.setTimeout(10);
+  randomSeed(analogRead(A0));   // A0 sense connectar -> llavor aleatòria
   
   pinMode(ledEnviamentPin, OUTPUT);
   pinMode(ledErrorPin, OUTPUT);
@@ -96,6 +129,14 @@ void loop() {
       calcularMitjana = false;
       i = 0;
       contadormax = 0;
+    }
+
+    if (mensaje == "ErrorOn") {
+      simularError = true;
+    }
+
+    if (mensaje == "ErrorOff") {
+      simularError = false;
     }
 
     if (mensaje.startsWith("LimiteTemperatura:")) {
@@ -144,10 +185,7 @@ void loop() {
     // Enviament de dades del radar amb prefix "2:" cada mig segon (500 ms)
     if (millis() - anteriorEnvioRadar >= intervalEnvioRadar) {
       anteriorEnvioRadar = millis();
-      mySerial.print("2:");
-      mySerial.print(anguloActual);
-      mySerial.print(":");
-      mySerial.println(distancia);
+      enviarMensaje("2:" + String(anguloActual) + ":" + String(distancia));
     }
 
     // --- PART TEMPERATURA I HUMITAT ---
@@ -170,10 +208,7 @@ void loop() {
         digitalWrite(ledEnviamentPin, HIGH);
         previousMillis = millis();
 
-        mySerial.print("1:T:");
-        mySerial.print(t);
-        mySerial.print(":H:");
-        mySerial.println(h);
+        enviarMensaje("1:T:" + String(t) + ":H:" + String(h));
 
         if (calcularMitjana) {
           temperaturas[i] = t;
@@ -186,8 +221,7 @@ void loop() {
             }
 
             media = contador / 10;
-            mySerial.print("4:Media:");
-            mySerial.println(media);
+            enviarMensaje("4:Media:" + String(media));
 
             for (int j = 0; j < 9; j++) {
               temperaturas[j] = temperaturas[j + 1];
@@ -197,7 +231,7 @@ void loop() {
             if (media > mediamax) {
               contadormax++;
               if (contadormax == 3) {
-                mySerial.println("Límite temperatura");
+                enviarMensaje("Límite temperatura");
                 contadormax = 0;
               }
             } else {
@@ -220,6 +254,6 @@ void loop() {
 
   if (millis() - previousLatido >= latido) {
     previousLatido = millis();
-    mySerial.println("3:");
+    enviarMensaje("3:");
   }
 }
