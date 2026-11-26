@@ -39,16 +39,16 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 
 ## 📢 Estat actual
 
-- [x] Lectura de temperatura i humitat amb el sensor
-- [x] Enviament de dades per port sèrie
-- [x] Gràfica a l'estació de terra
-- [x] Botons d'iniciar, parar i reprendre
-- [x] Heartbeat
-- [x] Tests unitàris
-- [x] Posar constants als pinmodes
-- [x] L'usuari pot escollir on es calculara la mitja de les últimes 10 dades de temperatura, i establir un valor màxim
-- [x] L'usuari pot canviar el periode d'enviament de dades de temperatura, humitat i distància
-- [x] El codi està estructurat, identat i amb comentaris clarificadors
-- [x] El usuari pot posar el sensor de distància en mode rastreig i establir una orientació determinada per el sensor
-- [x] Fer que puguis triar un angle concret estatic
-- [ ] Fer que, en reprendre la recepció, la gràfica continuï des d'on tocava
+- [x] Lectura de temperatura, humitat (DHT11) i distància (sensor ultrasònic amb servomotor)
+- [x] Enviament de dades i ordres per port sèrie bidireccional (Satèl·lit ↔ Estació de Terra Arduino ↔ Python)
+- [x] Gràfica en temps real (temperatura, humitat i mitjana) i radar d'ultrasons a l'estació de terra
+- [x] Botons d'iniciar, parar i reprendre la recepció
+- [x] Sistema de *Heartbeat* (batec cada 6 s) amb detecció i LED d'alarma per pèrdua de comunicació
+- [x] Verificació d'integritat mitjançant *checksum* i botó de simulació d'errors amb comptador de trames descartades
+- [x] Posar constants als `pinMode`
+- [x] L'usuari pot escollir on es calcula la mitjana de les últimes 10 lectures (Satèl·lit o Terra) i establir un límit màxim de temperatura amb alarma sonora (*buzzer*)
+- [x] L'usuari pot canviar el període d'enviament de dades de temperatura i humitat
+- [x] Registre d'esdeveniments (`registro_eventos.txt`) amb desat d'ordres, alarmes, observacions manuals i filtres per tipus i data/hora
+- [x] El codi està estructurat, indentat i amb comentaris clarificadors
+- [ ] Fer que, en reprendre la recepció, la gràfica continuï amb l'eix del temps real en lloc de comptar mostres consecutives
+- [ ] Aplicar també el canvi de freqüència d'enviament a les dades del sensor de distància
