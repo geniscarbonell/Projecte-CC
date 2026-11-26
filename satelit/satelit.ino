@@ -139,11 +139,13 @@ void loop() {
       simularError = false;
     }
 
+    // Actualització del nou límit de temperatura
     if (mensaje.startsWith("LimiteTemperatura:")) {
       mediamax = mensaje.substring(18).toFloat();
       contadormax = 0;
     }
 
+    // Actualització de la nova frequència denviament de dades de temperatura i humitat
     if (mensaje.startsWith("Frecuencia:")) {
       unsigned long novaFreq = mensaje.substring(11).toInt();
       if (novaFreq >= 1000) {
@@ -156,8 +158,9 @@ void loop() {
   // 2. Enviament de dades quan està actiu
   if (enviarDatos == true) {
 
-    // --- PART RADAR ULTRASONS ---
-    if (millis() - anterior >= 60) {
+    // Ultrasons: Comprova si han passat almenys 60 mil·lisegons des de l'última lectura 
+    //            per evitar que els ecos d'un pols anterior interfereixin amb el següent
+    if (millis() - anterior >= 60) { 
       anterior = millis();
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);
@@ -165,9 +168,13 @@ void loop() {
       delayMicroseconds(10);
       digitalWrite(trigPin, LOW);
 
+      // Mesura la distancia: rep quants microsegons ha tardat el eco en tornar,
+      // espera 15 ms. multiplica per la velocitat del so en cm/microsegon ,
+      // divideix entre 2 per calcular la distancia d'anada
       distancia = pulseIn(echoPin, HIGH, 15000) * 0.034 / 2;
     }
 
+    // Escombrat continu, nou angle cada 50 ms
     if (millis() - duracionServo >= intervalServo) {
       duracionServo = millis();
       anguloActual = anguloActual + angulo;
@@ -188,7 +195,7 @@ void loop() {
       enviarMensaje("2:" + String(anguloActual) + ":" + String(distancia));
     }
 
-    // --- PART TEMPERATURA I HUMITAT ---
+    // Temperatura i humitat
     if (millis() >= nextHT) {
       nextHT = millis() + intervalEnviament;
 
@@ -242,16 +249,19 @@ void loop() {
       }
     }
 
+    // Control de temps per al LED de fallo del sensor DHT
     if (esperandoTimeout && (millis() >= nextTimeoutHT)) {
       digitalWrite(ledErrorPin, HIGH);
     }
   }
 
+  // Control de temps per al LED de status
   if (led && (millis() - previousMillis >= intervalLed)) {
     digitalWrite(ledEnviamentPin, LOW);
     led = false;
   }
 
+  // Heartbeat
   if (millis() - previousLatido >= latido) {
     previousLatido = millis();
     enviarMensaje("3:");

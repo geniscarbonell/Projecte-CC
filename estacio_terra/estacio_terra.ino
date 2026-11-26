@@ -22,7 +22,7 @@ bool calcularMitjana = false;
 byte calcularChecksum(const String &msg) {
    byte suma = 0;
    for (unsigned int k = 0; k < msg.length(); k++) {
-      suma += (byte)msg[k];
+      suma += (byte)msg[k]; // Suma en hexadecimal
    }
    return suma;
 }
@@ -34,16 +34,23 @@ bool verificarChecksum(String &data) {
    int pos = data.lastIndexOf('*');
 
    // Ha de tenir exactament "*" + 2 dígits al final
-   if (pos == -1 || (unsigned int)data.length() != (unsigned int)pos + 3) return false;
+   if (pos == -1 || (unsigned int)data.length() != (unsigned int)pos + 3) 
+      return false;
 
+   // Comprova que siguin hexadecimals (numeros del 1 al 9 o lletres de la A a la F)
    char c1 = data.charAt(pos + 1);
    char c2 = data.charAt(pos + 2);
-   if (!isxdigit(c1) || !isxdigit(c2)) return false;
+   if (!isxdigit(c1) || !isxdigit(c2)) 
+      return false; // Si no hexadecimal -> false
 
+   // Agafa el checksum hexadecimal i els passa a valor numeric tipus byte (base 16)
    byte rebut = (byte)strtol(data.substring(pos + 1).c_str(), NULL, 16);
+   // Retalla el missatge original agafant tot el que hi ha abans de l'asterisc (cos) 
    String cos = data.substring(0, pos);
 
-   if (calcularChecksum(cos) != rebut) return false;
+   // Si el valor calculat no coincideix amb el rebut, el missatge s'ha alterat pel camí i retorna false
+   if (calcularChecksum(cos) != rebut) 
+      return false;
 
    data = cos;   // es treu el checksum
    return true;
