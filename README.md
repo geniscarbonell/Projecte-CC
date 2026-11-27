@@ -51,4 +51,5 @@ Sistema de telemetria format per un satèl·lit i una estació de terra que rep 
 - [x] Registre d'esdeveniments (`registro_eventos.txt`) amb desat d'ordres, alarmes, observacions manuals i filtres per tipus i data/hora
 - [x] El codi està estructurat, indentat i amb comentaris clarificadors
 - [ ] Fer que, en reprendre la recepció, la gràfica continuï amb l'eix del temps real en lloc de comptar mostres consecutives
+- [ ] Completar al codi del satèl·lit la recepció de les ordres `ModoRastreo` i `Angulo:X` (ja preparades a la interfície de Python) per fixar un angle estàtic al radar
 - [ ] Aplicar també el canvi de freqüència d'enviament a les dades del sensor de distància
